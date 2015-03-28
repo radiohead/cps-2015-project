@@ -1,50 +1,70 @@
+#include <DHT.h>
+#include <pulse_sensor.h>
+
 #define GASPIN 0
 #define PULSEPIN 1
 #define DHTPIN 2
 #define LEDPIN 13
 
-int BPM;                   // used to hold the pulse rate
-int Signal;                // holds the incoming raw data
-int IBI = 600;             // holds the time between beats, must be seeded! 
-boolean Pulse = false;     // true when pulse wave is high, false when it's low
-boolean QS = false;        // becomes true when Arduoino finds a beat.
+DHT dht_sensor(DHTPIN, DHT11);
+PulseSensor pulse_sensor(PULSEPIN, LEDPIN);
 
-int rate[10];                    // array to hold last ten IBI values
-unsigned long sampleCounter = 0;          // used to determine pulse timing
-unsigned long lastBeatTime = 0;           // used to find IBI
-int P = 512;                      // used to find peak in pulse wave, seeded
-int T = 512;                     // used to find trough in pulse wave, seeded
-int thresh = 525;                // used to find instant moment of heart beat, seeded
-int amp = 100;                   // used to hold amplitude of pulse waveform, seeded
-boolean firstBeat = true;        // used to seed rate array so we startup with reasonable BPM
-boolean secondBeat = false;      // used to seed rate array so we startup with reasonable BPM
+int bpm_value;
+int co_value;
+int temp_value;
+int humid_value;
+long int now;
+
+boolean values_read; 
 
 void setup() {
-  pinMode(blinkPin, OUTPUT);
-  Serial.begin(115200);
+  pinMode(LEDPIN, OUTPUT);
+
+  bpm_value = 0;
+  co_value = 0;
+  temp_value = 0;
+  humid_value = 0;
+  now = 0;
+
+  Serial.begin(9600);
+  dht_sensor.begin();
 }
 
 void loop() {
-  if (millis() % 2 == 0) {
-    noInterrupts();
-    calculate_pulse();
-    interrupts();
+  if (millis() % 2000 == 0) {
+    bpm_value = pulse_sensor.get_bpm_value();
+
+    sendDataToProcessing('B', bpm_value);
+    sendDataToProcessing('T', temp_value);
+    sendDataToProcessing('H', humid_value);
+    sendDataToProcessing('G', co_value);
+
+    values_read = false;
+    now = millis();
   }
-    if (millis() % 500 == 0 && QS == true) {                       // Quantified Self flag is true when arduino finds a heartbeat
-            fadeRate = 255;                  // Set 'fadeRate' Variable to 255 to fade LED with pulse
-            sendDataToProcessing('B',BPM);   // send heart rate with a 'B' prefix
-            QS = false;                      // reset the Quantified Self flag for next time    
+  
+  if (millis() - now < 1500){
+    if (millis() % 5 == 0) {
+      noInterrupts();
+      pulse_sensor.read_pulse(5);
+      interrupts();
     }
+  }
+  else {
+    if (!values_read) {
+      temp_value = dht_sensor.readTemperature();
+      humid_value = dht_sensor.readHumidity();
+  //    bpm_value = pulse_sensor.get_bpm_value();
+      co_value = read_co_volume();
+      values_read = true;
+    }
+    
+//    delay(500);
+  }
 }
 
 void sendDataToProcessing(char symbol, int data ){
-  Serial.print(symbol);                // symbol prefix tells Processing what type of data is coming
-  Serial.println(data);                // the data to send culminating in a carriage return
+  Serial.print(symbol);
+  Serial.println(data);
 }
-
-
-
-
-
-
 
