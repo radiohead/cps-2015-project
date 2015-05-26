@@ -1,0 +1,72 @@
+router.get('/gas', function(req, res, next) {
+  get_data(function(r) {
+    var time = [];
+    var data = [];
+    var timestamps = [];
+    var lasttime = 0;
+    var temp_data = sort_object(r.gas);
+
+    for (var i in temp_data) {
+      if ((i - lasttime) >= 120) {
+        lasttime = i;
+        time.push(time_converter(i));
+        timestamps.push(i);
+        data.push(temp_data[i]);
+      }
+    }
+
+    // data for Chart.js
+    var data = {
+      timestamps: timestamps,
+      labels: time,
+      datasets: [
+        {
+          label: "gas",
+          fillColor: "rgba(220,220,220,0.2)",
+          strokeColor: "rgba(220,220,220,1)",
+          pointColor: "rgba(220,220,220,1)",
+          pointStrokeColor: "#fff",
+          pointHighlightFill: "#fff",
+          pointHighlightStroke: "rgba(220,220,220,1)",
+          data: data
+        },
+      ]
+    };
+
+    res.render('gas', {
+      title: 'Gas data',
+      data: JSON.stringify(data),
+      result: {
+        gas_color: gas_color(temp_data[lasttime]),
+        gas: temp_data[lasttime],
+        avg_gas_color: gas_color(r.avg_gas),
+        avg_gas: r.avg_gas,
+      },
+      active: 'gas'
+    });
+
+  });
+});
+
+router.get('/gas/refresh', function(req, res, next) {
+  var r = {};
+  get_data(function(r) {
+    var date = 0;
+    var gas = 0;
+    for (var i in r.gas) {
+      if (i > date) {
+        date = i;
+        gas = r.gas[i];
+      }
+    }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(
+      {
+        timestamp: date,
+        avg_gas: Math.floor(r.avg_gas),
+        gas: Math.floor(gas)
+      }
+    ));
+  });
+});

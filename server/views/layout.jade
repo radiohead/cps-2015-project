@@ -1,0 +1,57 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+    link(rel='stylesheet', href='/semantic/semantic.min.css')
+    script(type='text/javascript', src='/javascripts/jquery-2.1.3.min.js')
+    script(type='text/javascript', src='/semantic/semantic.min.js')
+    script(type='text/javascript', src='/javascripts/Chart.min.js')
+  body
+    main.ui.page.grid
+      .ui.left.vertical.inverted.labeled.sidebar.menu.visible
+        if active=='index'
+          a.item.active(href='/')
+            i.home.icon
+            | Home
+        else
+          a.item(href='/')
+            i.home.icon
+            | Home
+        if active=='temperature'
+          a.item.active(href='/temperature')
+            i.eyedropper.icon
+            | Temperature
+        else
+          a.item(href='/temperature')
+            i.eyedropper.icon
+            | Temperature
+        if active=='humidity'
+          a.item.active(href='/humidity')
+            i.dashboard.icon
+            | Humidity
+        else
+          a.item(href='/humidity')
+            i.dashboard.icon
+            | Humidity
+        if active=='gas'
+          a.item.active(href='/gas')
+            i.cloud.icon
+            | Gas
+        else
+          a.item(href='/gas')
+            i.cloud.icon
+            | Gas
+        if active=='pulse'
+          a.item.active(href='/pulse')
+            i.heartbeat.icon
+            | Pulse
+        else
+          a.item(href='/pulse')
+            i.heartbeat.icon
+            | Pulse
+      .row
+        .column.padding-reset
+          br
+          h1.ui.huge.header #{title}
+          block content

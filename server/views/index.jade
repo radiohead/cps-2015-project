@@ -1,0 +1,102 @@
+extends layout
+
+block content
+  .ui.statistic(style='background-color: '+result.temperature_color+'; border-radius: 200px; min-width:250px; height:250px; padding-top: 80px;')
+    .value(id='temperature_value') #{Math.round(result.temperature)} °C
+    .label Temperature
+  .ui.statistic(style='background-color: '+result.pulse_color+'; border-radius: 200px; min-width:250px; height:250px; padding-top: 80px;')
+    .value(id='pulse_value') #{Math.round(result.pulse)}
+      small  BPM
+    .label Pulse
+  .ui.statistic(style='background-color: '+result.humidity_color+'; border-radius: 200px; min-width:250px; height:250px; padding-top: 80px;')
+    .value(id='humidity_value') #{Math.round(result.humidity)} %
+    .label Humidity
+  .ui.statistic(style='background-color: '+result.gas_color+'; border-radius: 200px; min-width:250px; height:250px; padding-top: 80px;')
+    .value(id='gas_value') #{result.gas} %
+    .label Gas
+  br
+  .ui.statistic(style='background-color: '+result.avg_temperature_color+'; border-radius: 200px; min-width:250px; height:250px; padding-top: 80px;')
+    .value(id='avg_temperature_value') #{Math.round(result.avg_temperature)} °C
+    .label Average temperature
+  .ui.statistic(style='background-color: '+result.avg_pulse_color+'; border-radius: 200px; min-width:250px; height:250px; padding-top: 80px;')
+    .value(id='avg_pulse_value') #{Math.round(result.avg_pulse)}
+      small  BPM
+    .label Average pulse
+  .ui.statistic(style='background-color: '+result.avg_humidity_color+'; border-radius: 200px; min-width:250px; height:250px; padding-top: 80px;')
+    .value(id='avg_humidity_value') #{Math.round(result.avg_humidity)} %
+    .label Average humidity
+  .ui.statistic(style='background-color: '+result.avg_gas_color+'; border-radius: 200px; min-width:250px; height:250px; padding-top: 80px;')
+    .value(id='avg_gas_value') #{Math.round(result.avg_gas * 100)/100} %
+    .label Average gas
+  br
+  h3 Last update: #{result.timestamp}
+
+  script.
+    var temperature_color = function (value) {
+      value = Math.round(value);
+      if (value < 25) {
+        return 'lightblue';
+      } else if (value < 29) {
+        return 'lightgreen';
+      } else {
+        return 'lightyellow';
+      }
+    };
+
+    var humidity_color = function (value) {
+      if (value < 700) {
+        return 'lightblue';
+      } else if (value < 750) {
+        return 'lightgreen';
+      } else {
+        return '#FFFF33';
+      }
+    };
+
+    var pulse_color = function (value) {
+      if (value < 60) {
+        return 'lightpink';
+      } else if (value < 100) {
+        return 'pink';
+      } else {
+        return 'red';
+      }
+    };
+
+    var gas_color = function (value) {
+      if (value < 0.12) {
+        return '#FFE87C';
+      } else if (value < 0.17) {
+        return '#FFE5B4';
+      } else {
+        return '#EE9A4D';
+      }
+    };
+
+    var pollServerForData = function () {
+      $.getJSON('/refresh', function (response) {
+        if (response) {
+          $('#temperature_value').html(response.temperature+' °C');
+          $('#temperature_value').parent().css('background-color', temperature_color(response.temperature));
+          $('#avg_temperature_value').html(response.avg_temperature+' °C');
+          $('#avg_temperature_value').parent().css('background-color', temperature_color(response.avg_temperature));
+          $('#humidity_value').html(response.humidity + ' %');
+          $('#humidity_value').parent().css('background-color', humidity_color(response.humidity));
+          $('#avg_humidity_value').html(response.avg_humidity + ' %');
+          $('#avg_humidity_value').parent().css('background-color', humidity_color(response.avg_humidity));
+          $('#pulse_value').html(response.pulse + ' <small>BPM</small>');
+          $('#pulse_value').parent().css('background-color', pulse_color(response.pulse));
+          $('#avg_pulse_value').html(response.avg_pulse + ' <small>BPM</small>');
+          $('#avg_pulse_value').parent().css('background-color', pulse_color(response.avg_pulse));
+          $('#gas_value').html(response.gas + ' <small>%</small>');
+          $('#gas_value').parent().css('background-color', gas_color(response.gas));
+          $('#avg_gas_value').html(response.avg_gas + ' <small>%</small>');
+          $('#avg_gas_value').parent().css('background-color', gas_color(response.avg_gas));
+
+
+        }
+        setTimeout(pollServerForData, 10000);
+      });
+    };
+
+    setTimeout(pollServerForData, 10000);
