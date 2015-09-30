@@ -1,4 +1,14 @@
 # Monitor for hazardous environments
-This is a CPS 2015 project for monitoring sensitive data in hazardous environment.
+This is a prototype of a distributed system for monitoring vital data in hazardous environments.
 
-More info to come
+The prototype consists of:
+* Arduino-based sensor
+* Ruby script that receives data via TCP and stores it in Redis
+* nodejs UI
+
+Arduino has the following sensors: heartrate, CO, temperature and humidity.
+
+# Contributors
+* helena-bond
+* Tychus
+* radiohead
